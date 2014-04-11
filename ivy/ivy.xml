@@ -119,6 +119,9 @@
     <!--
     <dependency org="org.apache.gora" name="gora-hbase" rev="0.3" conf="*->default" />
     -->
+
+    <dependency org="org.apache.gora" name="gora-hbase" rev="0.3" conf="*->default" />
+
     <!-- Uncomment this to use Accumulo as Gora backend. -->
     <!--
     <dependency org="org.apache.gora" name="gora-accumulo" rev="0.3" conf="*->default" />

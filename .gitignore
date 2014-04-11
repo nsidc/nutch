@@ -1,7 +1,8 @@
 conf/*.txt
-conf/*.xml
 conf/hadoop-env.sh
 conf/slaves
 build/
 runtime/
 logs/
+.project
+.classpath

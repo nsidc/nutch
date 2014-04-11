@@ -71,7 +71,7 @@
 
 <property>
   <name>http.agent.name</name>
-  <value></value>
+  <value>Libre Crawler</value>
   <description>HTTP 'User-Agent' request header. MUST NOT be empty - 
   please set this to a single word uniquely related to your organization.
 
@@ -109,7 +109,7 @@
 
 <property>
   <name>http.agent.description</name>
-  <value></value>
+  <value>Testing crawler for the NSIDC Libre project</value>
   <description>Further description of our bot- this text is used in
   the User-Agent header.  It appears in parenthesis after the agent name.
   </description>
@@ -117,7 +117,7 @@
 
 <property>
   <name>http.agent.url</name>
-  <value></value>
+  <value>http://nsidc.org</value>
   <description>A URL to advertise in the User-Agent header.  This will 
    appear in parenthesis after the agent name. Custom dictates that this
    should be a URL of a page explaining the purpose and behavior of this
@@ -127,7 +127,7 @@
 
 <property>
   <name>http.agent.email</name>
-  <value></value>
+  <value>lopez@kryos.colorado.edu</value>
   <description>An email address to advertise in the HTTP 'From' request
    header and User-Agent header. A good practice is to mangle this
    address (e.g. 'info at example dot com') to avoid spamming.
@@ -143,7 +143,7 @@
 
 <property>
   <name>http.agent.host</name>
-  <value></value>
+  <value>LibreCrawler</value>
   <description>Name or IP address of the host on which the Nutch crawler
   would be running. Currently this is used by 'protocol-httpclient'
   plugin.
@@ -842,7 +842,7 @@
 
 <property>
   <name>plugin.folders</name>
-  <value>plugins</value>
+  <value>src/plugin</value>
   <description>Directories where nutch plugins are located.  Each
   element may be a relative or absolute path.  If absolute, it is used
   as is.  If relative, it is searched for on the classpath.</description>
