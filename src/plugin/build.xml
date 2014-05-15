@@ -35,6 +35,8 @@
      <ant dir="index-static" target="deploy"/>
      <ant dir="index-metadata" target="deploy"/>
      <ant dir="language-identifier" target="deploy"/>
+     <ant dir="index-rawxml" target="deploy"/>
+     <ant dir="index-bcubefilter" target="deploy"/>
      <ant dir="lib-http" target="deploy"/>
      <ant dir="lib-nekohtml" target="deploy"/>
      <ant dir="lib-regex-filter" target="deploy"/>
@@ -52,6 +54,7 @@
      <ant dir="parse-swf" target="deploy"/>
      <ant dir="parse-tika" target="deploy"/>
      <ant dir="parse-zip" target="deploy"/>
+     <ant dir="parse-rawxml" target="deploy"/>
      <ant dir="scoring-opic" target="deploy"/>
      <ant dir="scoring-link" target="deploy"/>
      <ant dir="subcollection" target="deploy"/>
@@ -78,6 +81,8 @@
      <ant dir="creativecommons" target="test"/>
      <ant dir="index-anchor" target="test"/>
      <ant dir="index-more" target="test"/>
+     <ant dir="index-rawxml" target="test"/>
+     <ant dir="index-bcubefilter" target="test"/>
      <ant dir="language-identifier" target="test"/>
      <ant dir="lib-http" target="test"/>
      <ant dir="protocol-file" target="test"/>
@@ -89,6 +94,7 @@
      <ant dir="parse-swf" target="test"/>
      <ant dir="parse-tika" target="test"/>
      <ant dir="parse-zip" target="test"/>
+     <ant dir="parse-rawxml" target="test"/>
      <ant dir="subcollection" target="test"/>
      <ant dir="urlfilter-automaton" target="test"/>
      <ant dir="urlfilter-domain" target="test"/>
@@ -109,6 +115,8 @@
     <ant dir="creativecommons" target="clean"/>
     <ant dir="feed" target="clean"/>
     <ant dir="headings" target="clean"/>
+    <ant dir="index-rawxml" target="clean"/>
+    <ant dir="index-bcubefilter" target="clean"/>
     <ant dir="index-basic" target="clean"/>
     <ant dir="index-anchor" target="clean"/>
     <ant dir="index-more" target="clean"/>
@@ -134,6 +142,7 @@
     <ant dir="parse-swf" target="clean"/>
     <ant dir="parse-tika" target="clean"/>
     <ant dir="parse-zip" target="clean"/>
+    <ant dir="parse-rawxml" target="clean"/>
     <ant dir="scoring-opic" target="clean"/>
     <ant dir="scoring-link" target="clean"/>
     <ant dir="subcollection" target="clean"/>
