@@ -1,11 +1,13 @@
 package org.nsidc.nutch.parse.rawxml;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.endsWith;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.startsWith;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.metadata.Metadata;
@@ -15,6 +17,7 @@ import org.apache.nutch.parse.ParseResult;
 import org.apache.nutch.protocol.Content;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+
 
 public class RawXmlParseFilterTest {
 
@@ -75,7 +78,7 @@ public class RawXmlParseFilterTest {
 
 		assertTrue(contentReceived.startsWith("<![CDATA"));
 		assertTrue(contentReceived.endsWith("]]>"));
-		assertThat(contentReceived, containsString("<some><![CDATA[<?blah ?>]]>cdata</some>"));
+		assertTrue(contentReceived.contains("<some><![CDATA[<?blah ?>]]>cdata</some>"));
 	}
 	
 	@Test
@@ -90,7 +93,7 @@ public class RawXmlParseFilterTest {
 		ParseResult returnedParseResult = parseFilter.filter(fakeContent, mockParseResult, null, null);
 		
 		// assert
-		assertThat(returnedParseResult, is(equalTo(mockParseResult)));
+		assertTrue(returnedParseResult.equals(mockParseResult));
 	}
 
 	@Test

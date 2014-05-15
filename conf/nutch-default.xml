@@ -33,7 +33,7 @@
   confuse this setting with the http.content.limit setting.
   </description>
 </property>
-  
+
 <property>
   <name>file.crawl.parent</name>
   <value>true</value>
@@ -58,8 +58,8 @@
 
 <property>
   <name>http.agent.name</name>
-  <value></value>
-  <description>HTTP 'User-Agent' request header. MUST NOT be empty - 
+  <value>bcube.test.crawler</value>
+  <description>HTTP 'User-Agent' request header. MUST NOT be empty -
   please set this to a single word uniquely related to your organization.
 
   NOTE: You should also check other related properties:
@@ -105,7 +105,7 @@
 <property>
   <name>http.agent.url</name>
   <value></value>
-  <description>A URL to advertise in the User-Agent header.  This will 
+  <description>A URL to advertise in the User-Agent header.  This will
    appear in parenthesis after the agent name. Custom dictates that this
    should be a URL of a page explaining the purpose and behavior of this
    crawler.
@@ -124,7 +124,7 @@
 <property>
   <name>http.agent.version</name>
   <value>Nutch-1.6</value>
-  <description>A version string to advertise in the User-Agent 
+  <description>A version string to advertise in the User-Agent
    header.</description>
 </property>
 
@@ -271,7 +271,7 @@
 
 <property>
   <name>ftp.content.limit</name>
-  <value>65536</value> 
+  <value>65536</value>
   <description>The length limit for downloaded content, in bytes.
   If this value is nonnegative (>=0), content longer than it will be truncated;
   otherwise, no truncation at all.
@@ -421,7 +421,7 @@
   <name>db.preserve.backup</name>
   <value>true</value>
   <description>If true, updatedb will keep a backup of the previous CrawlDB
-  version in the old directory. In case of disaster, one can rename old to 
+  version in the old directory. In case of disaster, one can rename old to
   current and restore the CrawlDB to its previous state.
   </description>
 </property>
@@ -437,8 +437,8 @@
 <property>
   <name>db.update.max.inlinks</name>
   <value>10000</value>
-  <description>Maximum number of inlinks to take into account when updating 
-  a URL score in the crawlDB. Only the best scoring inlinks are kept. 
+  <description>Maximum number of inlinks to take into account when updating
+  a URL score in the crawlDB. Only the best scoring inlinks are kept.
   </description>
 </property>
 
@@ -542,7 +542,7 @@
   <name>db.parsemeta.to.crawldb</name>
   <value></value>
   <description>Comma-separated list of parse metadata keys to transfer to the crawldb (NUTCH-779).
-   Assuming for instance that the languageidentifier plugin is enabled, setting the value to 'lang' 
+   Assuming for instance that the languageidentifier plugin is enabled, setting the value to 'lang'
    will copy both the key 'lang' and its value to the corresponding entry in the crawldb.
   </description>
 </property>
@@ -594,7 +594,7 @@
   <name>generate.count.mode</name>
   <value>host</value>
   <description>Determines how the URLs are counted for generator.max.count.
-  Default value is 'host' but can be 'domain'. Note that we do not count 
+  Default value is 'host' but can be 'domain'. Note that we do not count
   per IP in the new version of the Generator.
   </description>
 </property>
@@ -637,8 +637,8 @@
 <property>
   <name>partition.url.mode</name>
   <value>byHost</value>
-  <description>Determines how to partition URLs. Default value is 'byHost', 
-  also takes 'byDomain' or 'byIP'. 
+  <description>Determines how to partition URLs. Default value is 'byHost',
+  also takes 'byDomain' or 'byIP'.
   </description>
 </property>
 
@@ -646,9 +646,9 @@
   <name>crawl.gen.delay</name>
   <value>604800000</value>
   <description>
-   This value, expressed in milliseconds, defines how long we should keep the lock on records 
-   in CrawlDb that were just selected for fetching. If these records are not updated 
-   in the meantime, the lock is canceled, i.e. they become eligible for selecting. 
+   This value, expressed in milliseconds, defines how long we should keep the lock on records
+   in CrawlDb that were just selected for fetching. If these records are not updated
+   in the meantime, the lock is canceled, i.e. they become eligible for selecting.
    Default value of this is 7 days (604800000 ms).
   </description>
 </property>
@@ -658,14 +658,14 @@
 <property>
   <name>fetcher.server.delay</name>
   <value>5.0</value>
-  <description>The number of seconds the fetcher will delay between 
+  <description>The number of seconds the fetcher will delay between
    successive requests to the same server.</description>
 </property>
 
 <property>
   <name>fetcher.server.min.delay</name>
   <value>0.0</value>
-  <description>The minimum number of seconds the fetcher will delay between 
+  <description>The minimum number of seconds the fetcher will delay between
   successive requests to the same server. This value is applicable ONLY
   if fetcher.threads.per.host is greater than 1 (i.e. the host blocking
   is turned off).</description>
@@ -681,7 +681,7 @@
  amount of time retrieved from robots.txt Crawl-Delay, however long that
  might be.
  </description>
-</property> 
+</property>
 
 <property>
   <name>fetcher.threads.fetch</name>
@@ -698,7 +698,7 @@
   <name>fetcher.threads.per.queue</name>
   <value>1</value>
   <description>This number is the maximum number of threads that
-    should be allowed to access a queue at one time. Replaces 
+    should be allowed to access a queue at one time. Replaces
     deprecated parameter 'fetcher.threads.per.host'.
    </description>
 </property>
@@ -706,8 +706,8 @@
 <property>
   <name>fetcher.queue.mode</name>
   <value>byHost</value>
-  <description>Determines how to put URLs into queues. Default value is 'byHost', 
-  also takes 'byDomain' or 'byIP'. Replaces the deprecated parameter 
+  <description>Determines how to put URLs into queues. Default value is 'byHost',
+  also takes 'byDomain' or 'byIP'. Replaces the deprecated parameter
   'fetcher.threads.per.host.by.ip'.
   </description>
 </property>
@@ -735,7 +735,7 @@
   <name>fetcher.timelimit.mins</name>
   <value>-1</value>
   <description>This is the number of minutes allocated to the fetching.
-  Once this value is reached, any remaining entry from the input URL list is skipped 
+  Once this value is reached, any remaining entry from the input URL list is skipped
   and all active queues are emptied. The default value of -1 deactivates the time limit.
   </description>
 </property>
@@ -827,7 +827,7 @@
 
 <property>
   <name>fetcher.follow.outlinks.ignore.external</name>
-  <value>true</value>  
+  <value>true</value>
   <description>Whether to ignore or follow external links. Set db.ignore.external.links to false and this to true to store outlinks
   in the output but not follow them. If db.ignore.external.links is true this directive is ignored.
   </description>
@@ -877,7 +877,7 @@
   in given order. For example, if this property has value:
   org.apache.nutch.indexer.basic.BasicIndexingFilter org.apache.nutch.indexer.more.MoreIndexingFilter
   then BasicIndexingFilter is applied first, and MoreIndexingFilter second.
-  
+
   Filter ordering might have impact on result if one filter depends on output of
   another filter.
   </description>
@@ -956,7 +956,7 @@
   <name>mime.types.file</name>
   <value>tika-mimetypes.xml</value>
   <description>Name of file in CLASSPATH containing filename extension and
-  magic sequence to mime types mapping information. Overrides the default Tika config 
+  magic sequence to mime types mapping information. Overrides the default Tika config
   if specified.
   </description>
 </property>
@@ -995,8 +995,8 @@
   include.  Any plugin not matching this expression is excluded.
   In any case you need at least include the nutch-extensionpoints plugin. By
   default Nutch includes crawling just HTML and plain text via HTTP,
-  and basic indexing and search plugins. In order to use HTTPS please enable 
-  protocol-httpclient, but be aware of possible intermittent problems with the 
+  and basic indexing and search plugins. In order to use HTTPS please enable
+  protocol-httpclient, but be aware of possible intermittent problems with the
   underlying commons-httpclient library.
   </description>
 </property>
@@ -1004,7 +1004,7 @@
 <property>
   <name>plugin.excludes</name>
   <value></value>
-  <description>Regular expression naming plugin directory names to exclude.  
+  <description>Regular expression naming plugin directory names to exclude.
   </description>
 </property>
 
@@ -1017,7 +1017,7 @@
     custom tags here will allow for their propagation into a pages outlinks, as
     well as allow for them to be included as part of an index.
     Values should be comma-delimited. ("tag1,tag2,tag3") Do not pad the tags with
-    white-space at their boundaries, if you are using anything earlier than Hadoop-0.21. 
+    white-space at their boundaries, if you are using anything earlier than Hadoop-0.21.
   </description>
 </property>
 
@@ -1075,8 +1075,8 @@
 <property>
   <name>parser.html.outlinks.ignore_tags</name>
   <value></value>
-  <description>Comma separated list of HTML tags, from which outlinks 
-  shouldn't be extracted. Nutch takes links from: a, area, form, frame, 
+  <description>Comma separated list of HTML tags, from which outlinks
+  shouldn't be extracted. Nutch takes links from: a, area, form, frame,
   iframe, script, link, img. If you add any of those tags here, it
   won't be taken. Default is empty list. Probably reasonable value
   for most people would be "img,script,link".</description>
@@ -1105,8 +1105,8 @@
 <property>
   <name>parser.timeout</name>
   <value>30</value>
-  <description>Timeout in seconds for the parsing of a document, otherwise treats it as an exception and 
-  moves on the the following documents. This parameter is applied to any Parser implementation. 
+  <description>Timeout in seconds for the parsing of a document, otherwise treats it as an exception and
+  moves on the the following documents. This parameter is applied to any Parser implementation.
   Set to -1 to deactivate, bearing in mind that this could cause
   the parsing to crash because of a very long or corrupted document.
   </description>
@@ -1127,8 +1127,8 @@
 <property>
   <name>parser.skip.truncated</name>
   <value>true</value>
-  <description>Boolean value for whether we should skip parsing for truncated documents. By default this 
-  property is activated due to extremely high levels of CPU which parsing can sometimes take.  
+  <description>Boolean value for whether we should skip parsing for truncated documents. By default this
+  property is activated due to extremely high levels of CPU which parsing can sometimes take.
   </description>
 </property>
 
@@ -1242,9 +1242,9 @@
   <name>index.static</name>
   <value></value>
   <description>
-  A simple plugin called at indexing that adds fields with static data. 
+  A simple plugin called at indexing that adds fields with static data.
   You can specify a list of fieldname:fieldcontent per nutch job.
-  It can be useful when collections can't be created by urlpatterns, 
+  It can be useful when collections can't be created by urlpatterns,
   like in subcollection, but on a job-basis.
   </description>
 </property>
@@ -1257,7 +1257,7 @@
   <description>
   Comma-separated list of keys to be taken from the parse metadata to generate fields.
   Can be used e.g. for 'description' or 'keywords' provided that these values are generated
-  by a parser (see parse-metatags plugin)  
+  by a parser (see parse-metatags plugin)
   </description>
 </property>
 
@@ -1265,7 +1265,7 @@
   <name>index.content.md</name>
   <value></value>
   <description>
-   Comma-separated list of keys to be taken from the content metadata to generate fields. 
+   Comma-separated list of keys to be taken from the content metadata to generate fields.
   </description>
 </property>
 
@@ -1274,7 +1274,7 @@
   <value></value>
   <description>
      Comma-separated list of keys to be taken from the crawldb metadata to generate fields.
-     Can be used to index values propagated from the seeds with the plugin urlmeta 
+     Can be used to index values propagated from the seeds with the plugin urlmeta
   </description>
 </property>
 
@@ -1282,10 +1282,10 @@
 <property>
   <name>metatags.names</name>
   <value>description;keywords</value>
-  <description> Names of the metatags to extract, separated by;. 
+  <description> Names of the metatags to extract, separated by;.
   Use '*' to extract all metatags. Prefixes the names with 'metatag.'
-  in the parse-metadata. For instance to index description and keywords, 
-  you need to activate the plugin index-metadata and set the value of the 
+  in the parse-metadata. For instance to index description and keywords,
+  you need to activate the plugin index-metadata and set the value of the
   parameter 'index.parse.md' to 'metatag.description;metatag.keywords'.
   </description>
 </property>
@@ -1327,7 +1327,7 @@
   <name>link.ignore.limit.domain</name>
   <value>true</value>
   <description>Limit to only a single outlink to the same domain.</description>
-</property> 
+</property>
 
 <property>
   <name>link.analyze.num.iterations</name>
@@ -1353,7 +1353,7 @@
   <description>Whether to delete gone pages from the web graph.</description>
 </property>
 
-<property> 
+<property>
   <name>link.loops.depth</name>
   <value>2</value>
   <description>The depth for the loops algorithm.</description>
@@ -1368,7 +1368,7 @@
 <property>
   <name>mapreduce.fileoutputcommitter.marksuccessfuljobs</name>
   <value>false</value>
-  <description>Hadoop >= 0.21 generates SUCCESS files in the output which can crash 
+  <description>Hadoop >= 0.21 generates SUCCESS files in the output which can crash
   the readers. This should not be an issue once Nutch is ported to the new MapReduce API
   but for now this parameter should prevent such cases.
   </description>
@@ -1385,7 +1385,7 @@
   </description>
 </property>
 
-<property> 
+<property>
   <name>solr.commit.size</name>
   <value>250</value>
   <description>
@@ -1399,7 +1399,7 @@
   <name>solr.commit.index</name>
   <value>true</value>
   <description>
-  When closing the indexer, trigger a commit to the Solr server. 
+  When closing the indexer, trigger a commit to the Solr server.
   </description>
 </property>
 

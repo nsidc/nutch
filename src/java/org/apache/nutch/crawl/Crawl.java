@@ -18,13 +18,13 @@
 package org.apache.nutch.crawl;
 
 import java.util.*;
+import java.io.IOException;
 import java.text.*;
 
 // Commons Logging imports
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.mapred.*;
@@ -36,7 +36,6 @@ import org.apache.nutch.indexer.solr.SolrIndexer;
 import org.apache.nutch.util.HadoopFSUtil;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.NutchJob;
-
 import org.apache.nutch.fetcher.Fetcher;
 
 public class Crawl extends Configured implements Tool {
@@ -60,13 +59,14 @@ public class Crawl extends Configured implements Tool {
   public int run(String[] args) throws Exception {
     if (args.length < 1) {
       System.out.println
-      ("Usage: Crawl <urlDir> -solr <solrURL> [-dir d] [-threads n] [-depth i] [-topN N]");
+      ("Usage: Crawl <urlDir> -solr <solrURL> [-dir d] [-threads n] [-depth i] [-topN N] [-fetchers N]");
       return -1;
     }
     Path rootUrlDir = null;
     Path dir = new Path("crawl-" + getDate());
     int threads = getConf().getInt("fetcher.threads.fetch", 10);
     int depth = 5;
+    int fetchers = -1;
     long topN = Long.MAX_VALUE;
     String solrUrl = null;
     
@@ -86,6 +86,9 @@ public class Crawl extends Configured implements Tool {
       } else if ("-solr".equals(args[i])) {
         solrUrl = args[i + 1];
         i++;
+      } else if ("-fetchers".equals(args[i])) {
+    	  fetchers = Integer.parseInt(args[i+1]);
+          i++;
       } else if (args[i] != null) {
         rootUrlDir = new Path(args[i]);
       }
@@ -127,7 +130,7 @@ public class Crawl extends Configured implements Tool {
     injector.inject(crawlDb, rootUrlDir);
     int i;
     for (i = 0; i < depth; i++) {             // generate new segment
-      Path[] segs = generator.generate(crawlDb, segments, -1, topN, System
+      Path[] segs = generator.generate(crawlDb, segments, fetchers, topN, System
           .currentTimeMillis());
       if (segs == null) {
         LOG.info("Stopping at depth=" + i + " - no more URLs to fetch.");
@@ -138,27 +141,32 @@ public class Crawl extends Configured implements Tool {
         parseSegment.parse(segs[0]);    // parse it, if needed
       }
       crawlDbTool.update(crawlDb, segs, true, true); // update crawldb
-    }
-    if (i > 0) {
+      
       linkDbTool.invert(linkDb, segments, true, true, false); // invert links
-
+      
       if (solrUrl != null) {
-        // index, dedup & merge
-        FileStatus[] fstats = fs.listStatus(segments, HadoopFSUtil.getPassDirectoriesFilter(fs));
-        SolrIndexer indexer = new SolrIndexer(getConf());
-        indexer.indexSolr(solrUrl, crawlDb, linkDb, 
-          Arrays.asList(HadoopFSUtil.getPaths(fstats)));
-        SolrDeleteDuplicates dedup = new SolrDeleteDuplicates();
-        dedup.setConf(getConf());
-        dedup.dedup(solrUrl);
+        solrIndex(solrUrl, fs, crawlDb, linkDb, segments);
       }
       
-    } else {
-      LOG.warn("No URLs to fetch - check your seed list and URL filters.");
+      fs.delete(segments,true);
+      
     }
     if (LOG.isInfoEnabled()) { LOG.info("crawl finished: " + dir); }
     return 0;
   }
+
+
+	private void solrIndex(String solrUrl, FileSystem fs, Path crawlDb,
+			Path linkDb, Path segments) throws IOException {
+		// index, dedup & merge
+		FileStatus[] fstats = fs.listStatus(segments, HadoopFSUtil.getPassDirectoriesFilter(fs));
+		SolrIndexer indexer = new SolrIndexer(getConf());
+		indexer.indexSolr(solrUrl, crawlDb, linkDb, 
+		  Arrays.asList(HadoopFSUtil.getPaths(fstats)));
+		SolrDeleteDuplicates dedup = new SolrDeleteDuplicates();
+		dedup.setConf(getConf());
+		dedup.dedup(solrUrl);
+	}
 
 
 }

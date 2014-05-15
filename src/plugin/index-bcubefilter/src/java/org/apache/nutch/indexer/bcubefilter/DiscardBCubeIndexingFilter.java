@@ -60,16 +60,16 @@ public class DiscardBCubeIndexingFilter implements IndexingFilter {
     xml_types.add("application/opensearchdescription+xml");
     
     if (doc.getField("type") != null) {    
-	    for (Object type_object : doc.getField("type").getValues()) {
-	      if (type_object != null) {
-	    	  if (xml_types.contains(type_object.toString())) {
+	    for (Object mimeType : doc.getField("type").getValues()) {
+	      if (mimeType != null) {
+	    	  if (xml_types.contains(mimeType.toString())) {
 	    		  return doc;
 	    	  }
 	      }
 	    }
 	    return null;
     } else {
-      System.out.println("The index-more plugin should be added before this plugin in indexingfilter.order");
+      LOG.error("The index-more plugin should be added before this plugin in indexingfilter.order");
       return doc;
     }
 //    LOG.debug(types.toString());

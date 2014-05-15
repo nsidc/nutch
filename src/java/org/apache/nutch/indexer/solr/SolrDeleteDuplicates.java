@@ -261,11 +261,17 @@ Tool {
         }
 
         public boolean next(Text key, SolrRecord value) throws IOException {
+          // The following code produced an IndexOutOfBoundsException        	
+          SolrDocument doc;
           if (currentDoc >= numDocs) {
             return false;
+          }          
+          try {
+        	  doc = solrDocs.get(currentDoc);
+          } catch (IndexOutOfBoundsException e) {
+        	  return false;
           }
-
-          SolrDocument doc = solrDocs.get(currentDoc);
+          
           String digest = (String) doc.getFieldValue(SolrConstants.DIGEST_FIELD);
           key.set(digest);
           value.readSolrDocument(doc);

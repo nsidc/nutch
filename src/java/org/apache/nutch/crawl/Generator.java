@@ -618,6 +618,8 @@ public class Generator extends Configured implements Tool {
     LOG.info("Generator: finished at " + sdf.format(end) + ", elapsed: " + TimingUtil.elapsedTime(start, end));
 
     Path[] patharray = new Path[generatedSegments.size()];
+    
+    LOG.info("Generator: generated " + generatedSegments.size() + "segments");
     return generatedSegments.toArray(patharray);
   }
 
