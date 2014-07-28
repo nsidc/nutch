@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.text.*;
 
 // Commons Logging imports
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.*;
@@ -59,7 +58,7 @@ public class Crawl extends Configured implements Tool {
   public int run(String[] args) throws Exception {
     if (args.length < 1) {
       System.out.println
-      ("Usage: Crawl <urlDir> -solr <solrURL> [-dir d] [-threads n] [-depth i] [-topN N] [-fetchers N]");
+      ("Usage: Crawl <urlDir> -solr <solrURL> [-dir d] [-threads n] [-depth i] [-topN N] [-fetchers N] [-deleteSegments true|false]");
       return -1;
     }
     Path rootUrlDir = null;
@@ -69,6 +68,7 @@ public class Crawl extends Configured implements Tool {
     int fetchers = -1;
     long topN = Long.MAX_VALUE;
     String solrUrl = null;
+    String deleteSegments = null;
     
     for (int i = 0; i < args.length; i++) {
       if ("-dir".equals(args[i])) {
@@ -89,6 +89,9 @@ public class Crawl extends Configured implements Tool {
       } else if ("-fetchers".equals(args[i])) {
     	  fetchers = Integer.parseInt(args[i+1]);
           i++;
+      } else if ("-deleteSegments".equals(args[i])) {
+    	  deleteSegments = args[i+1];
+          i++;          
       } else if (args[i] != null) {
         rootUrlDir = new Path(args[i]);
       }
@@ -115,10 +118,7 @@ public class Crawl extends Configured implements Tool {
     Path crawlDb = new Path(dir + "/crawldb");
     Path linkDb = new Path(dir + "/linkdb");
     Path segments = new Path(dir + "/segments");
-    Path indexes = new Path(dir + "/indexes");
-    Path index = new Path(dir + "/index");
 
-    Path tmpDir = job.getLocalPath("crawl"+Path.SEPARATOR+getDate());
     Injector injector = new Injector(getConf());
     Generator generator = new Generator(getConf());
     Fetcher fetcher = new Fetcher(getConf());
@@ -129,26 +129,29 @@ public class Crawl extends Configured implements Tool {
     // initialize crawlDb
     injector.inject(crawlDb, rootUrlDir);
     int i;
-    for (i = 0; i < depth; i++) {             // generate new segment
+    for (i = 0; i < depth; i++) {             
+      // generate new segment
       Path[] segs = generator.generate(crawlDb, segments, fetchers, topN, System
           .currentTimeMillis());
       if (segs == null) {
         LOG.info("Stopping at depth=" + i + " - no more URLs to fetch.");
         break;
       }
-      fetcher.fetch(segs[0], threads);  // fetch it
+      fetcher.fetch(segs[0], threads); // fetch it
       if (!Fetcher.isParsing(job)) {
-        parseSegment.parse(segs[0]);    // parse it, if needed
+        parseSegment.parse(segs[0]);// parse it, if needed
       }
       crawlDbTool.update(crawlDb, segs, true, true); // update crawldb
       
       linkDbTool.invert(linkDb, segments, true, true, false); // invert links
       
       if (solrUrl != null) {
-        solrIndex(solrUrl, fs, crawlDb, linkDb, segments);
+        solrIndex(solrUrl, fs, crawlDb, linkDb, segments); // index the segments into Solr
       }
       
-      fs.delete(segments,true);
+      if (deleteSegments != null && deleteSegments.toLowerCase().equals("true")){
+    	fs.delete(segments,true); // delete the segments after they are indexed to save HDF space.
+      }
       
     }
     if (LOG.isInfoEnabled()) { LOG.info("crawl finished: " + dir); }
