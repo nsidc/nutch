@@ -1,106 +1,56 @@
 require "rspec/core/rake_task"
 require "logger"
 
-namespace :nutch do
-
-  DEPLOYMENT_ENVIRONMENTS = {
-    :prod => { :solr_host => 'http://54.187.218.185:8983', :solr_path => 'solr'},
-    :development => { :solr_host => 'http://localhost:8983', :solr_path => 'solr'}
-  }
+namespace :emr do
 
   @logger = Logger.new(STDOUT)
   @logger.level = Logger::WARN
 
-  # To override the default site config directory ($PWD/site/), call rake with e.g. "site=some_directory"
-  NUTCH_SITE_DIR = ENV['NUTCH_HOME'] || "runtime/local"
-  NUTCH_CONF_DIR = "#{NUTCH_SITE_DIR}/conf/"
-  NUTCH_DATA_DIR = "#{NUTCH_SITE_DIR}/crawldb"
-  NUTCH_BIN = "#{NUTCH_SITE_DIR}/bin/nutch"
+  #  (bcube-test, bcube-seeds, 5, m1.large, 5, 2500, false, http://54.187.218.185:8983/solr/ )
 
-  NUM_PAGES_TO_FETCH = 100
+  # reasonable max topn based on empiric tests:
+  # cluster size = 4,  topn = 20000
+  # cluster size = 8,  topn = 50000
 
-  SEMAPHORE_FILENAME = "pidfile"
+  desc "Runs a new crawl/index cycle"
+  task :crawl, [:s3_bucket, :s3_seeds, :ec2_nodes, :ec2_instance, :crawl_depth, :max_pages_per_level, :delete_segments_after_indexing, :save_data_back_to_s3, :solr_host] do |t, args|
 
-  #TODO [IT, 2012-06-12]: Make the tasks handle Ctrl-C interrupts better - should bail on the whole task instead of needing multiple kills to actually stop doing anything
+    s3_bucket = args[:s3_bucket]
+    s3_seeds = args[:s3_seeds]
+    cluster_nodes = args[:ec2_nodes]
+    master_type = args[:ec2_instance]
+    slave_type = args[:ec2_instance]
+    crawl_depth = args[:crawl_depth]
+    max_pages_per_level = args[:max_pages_per_level]
+    delete_segments_after_indexing = args[:delet_segments_after_indexing]
+    save_crawled_data_to_s3 = args[:save_data_back_to_s3]
+    solr_host = args[:solr_host]
 
-  desc "Runs a new crawl/index cycle if one isn't already running"
-  task :iter, :environment do |t, args|
-    set_environment args[:environment]
+    numFetchers = (cluster_nodes.to_i - 1).to_s
 
-    if get_semaphore?
-      begin
-        run_iter
-      rescue Exception => ex
-        @logger.fatal ex.message
-      ensure
-        delete_semaphore
-      end
-    else
-      @logger.warn "Nutch is already nutching...  Please try later."
-    end
+    job_properties = get_emr_properties(cluster_nodes, master_type, slave_type)
+    hadoop_steps = get_hadoop_jar_steps(
+      s3_bucket,
+      s3_seeds,
+      numFetchers, # number of fetchers has to be equal to the number of slave nodes
+      crawl_depth,
+      max_pages_per_level,
+      delete_segments_after_indexing,
+      save_crawled_data_to_s3,
+      solr_host
+    )
+
+    bootstrap_actions = get_emr_bootstrap()
+
+   # puts "aws emr  run-job-flow --name BCubeCrawl --instances '#{job_properties}' --bootstrap-action '#{bootstrap_actions}' --steps '#{hadoop_steps}' --log-uri \"s3://#{s3_bucket}/logs\""
+   # --bootstrap-action '#{bootstrap_actions}'
+    run ("aws emr  run-job-flow --name BCubeCrawl --instances '#{job_properties}' --steps '#{hadoop_steps}' --log-uri \"s3://#{s3_bucket}/logs\"")
+
   end
-
-
-  desc "Prepares the Nutch install for fresh crawl starting with the URLs in the seed file"
-  task :clear_and_reseed_nutch_crawl_db do
-    fix_nutch_bin_attrs
-
-    run "rm -rf #{NUTCH_DATA_DIR}"
-    run_nutch "inject #{NUTCH_DATA_DIR} #{NUTCH_SITE_DIR}/bin/urls/seeds.txt"
-  end
-
-
-  desc "Crawl the next set of pages in the crawl list"
-  task :crawl do
-    run_nutch "generate #{NUTCH_DATA_DIR} #{NUTCH_DATA_DIR}/segments -topN #{NUM_PAGES_TO_FETCH} "
-
-    s1 = get_most_recent_segment_dir_name()
-    run_nutch "fetch #{s1}"
-    run_nutch "parse #{s1}"
-    run_nutch "updatedb #{NUTCH_DATA_DIR} #{s1}"
-
-    # Invert links so Solr can ingest the data
-    run_nutch "invertlinks #{NUTCH_DATA_DIR}/linkdb -dir #{NUTCH_DATA_DIR}/segments"
-  end
-
-
-  desc "Index the last crawl's results into Solr. Supported environments are integration, qa, staging, production and development"
-  task :index, :environment do |t, args|
-    set_environment args[:environment]
-
-    run_nutch "solrindex #{solr_url} #{NUTCH_DATA_DIR}/ -linkdb #{NUTCH_DATA_DIR}/linkdb/ #{NUTCH_DATA_DIR}/segments/*"
-
-    # Remove segments directories
-    #TODO: Only do this if the indexing was successful
-    FileUtils.rm_rf "#{NUTCH_DATA_DIR}/segments"
-
-    # Remove pages that aren't there any more from Solr's index
-    # run_nutch "solrclean #{NUTCH_DATA_DIR}/ #{solr_url}"
-  end
-
 
   desc "Clear everything (yes, everything) out from the Solr instance"
-  task :clear_solr, :environment do |t, args|
-    set_environment args[:environment]
-    run "curl -kv '#{solr_url}/update?stream.body=<delete><query>*:*</query></delete>&commit=true'"
-  end
-
-  def set_environment(env)
-    env = env || @environment  # Use a previously set environment if one isn't passed, and one has already been set.
-    fail "No environment set" unless env
-    environment = env.to_sym
-    fail("No such environment (#{env})") unless DEPLOYMENT_ENVIRONMENTS.has_key? environment
-    @environment = environment
-  end
-
-  def environment_settings
-    return DEPLOYMENT_ENVIRONMENTS[@environment]
-  end
-
-  def solr_url
-    solr_host = environment_settings[:solr_host]
-    solr_path = environment_settings[:solr_path]
-    return "#{solr_host}/#{solr_path}"
+  task :clear_solr, [:solr_host, :user, :password] do |t, args|
+    run "curl -kv --user #{args[:user]}:#{args[:password]} '#{args[:solr_host]}/update?stream.body=<delete><query>*:*</query></delete>&commit=true'"
   end
 
   def run(command)
@@ -108,53 +58,80 @@ namespace :nutch do
     system "#{command} >&2"
   end
 
-  def run_nutch(command)
-    run "NUTCH_CONF_DIR=#{NUTCH_CONF_DIR} #{NUTCH_BIN} #{command}"
-  end
+  def get_hadoop_jar_steps (s3_bucket, s3_seeds, numFetchers, depth, topN, deleteSegments, save_data, solr_host)
 
-  def get_most_recent_segment_dir_name
-    `ls -d #{NUTCH_DATA_DIR}/segments/2* | tail -1`
-  end
-
-  def fix_nutch_bin_attrs
-    run "chmod a+x #{NUTCH_BIN}"
-  end
-
-  # Tries to exclusively open a sempahore file.
-  # If the file already exists, return false.
-  def get_semaphore?
-    write_pid_to_pidfile
-  end
-
-  # Removes the semaphore file
-  def delete_semaphore
-    @logger.info "Removing semaphore..."
-    File.delete(SEMAPHORE_FILENAME)
-  end
-
-  def write_pid_to_pidfile
-    begin
-      # The EXCL option ensures Ruby will not create a file if it already exists
-      File.open(SEMAPHORE_FILENAME, File::CREAT|File::RDWR|File::TRUNC|File::EXCL) do |pidfile|
-        pid = Process.pid
-        @logger.info "Creating semaphore for process #{pid}..."
-        pidfile.puts pid
-        return true
-      end
-    rescue Errno::EEXIST
-      return false
-    rescue Exception => ex
-      # If there's another exception, do our best to clean up.
-      delete_semaphore
-      @logger.error ex
-      raise ex
+    if save_data == "false"
+      return "[
+                { \"HadoopJarStep\":
+                  {
+                    \"MainClass\": \"org.apache.nutch.crawl.Crawl\",
+                    \"Args\": [\"s3://#{s3_seeds}\", \"-dir\", \"crawl\", \"-depth\", \"#{depth}\", \"-solr\", \"#{solr_host}\" , \"-topN\", \"#{topN}\" , \"-fetchers\", \"#{numFetchers}\", \"-deleteSegments\", \"#{deleteSegments}\"],
+                    \"Jar\": \"s3://bcube-nutch-job/apache-nutch-1.6.job\"
+                  }, \"Name\": \"nutch-crawl\"
+                }
+              ]"
+    else
+      return "[
+                { \"HadoopJarStep\":
+                  {
+                    \"MainClass\": \"org.apache.nutch.crawl.Crawl\",
+                    \"Args\": [\"s3://#{s3_seeds}\", \"-dir\", \"crawl\", \"-depth\", \"#{depth}\", \"-solr\", \"#{solr_host}\" , \"-topN\", \"#{topN}\", \"-fetchers\", \"#{numFetchers}\", \"-deleteSegments\", \"#{deleteSegments}\"],
+                    \"Jar\": \"s3://bcube-nutch-job/apache-nutch-1.6.job\"
+                  }, \"Name\": \"nutch-crawl\"
+                },
+                { \"HadoopJarStep\":
+                  {
+                    \"MainClass\": \"org.apache.nutch.segment.SegmentMerger\",
+                    \"Args\": [\"crawl/mergedsegments\", \"-dir\", \"crawl/segments\"],
+                    \"Jar\": \"s3://bcube-nutch-job/apache-nutch-1.6.job\"
+                  }, \"Name\": \"nutch-crawl\"
+                },
+                { \"HadoopJarStep\":
+                  {
+                    \"Args\": [\"--src\",\"hdfs:///user/hadoop/crawl/crawldb\",\"--dest\",\"s3://#{s3_bucket}/crawl/crawldb\",\"--srcPattern\",\".*\",\"--outputCodec\",\"snappy\"],
+                    \"Jar\": \"s3://elasticmapreduce/libs/s3distcp/role/s3distcp.jar\"
+                  }, \"Name\": \"crawlData2S3\"
+                },
+                { \"HadoopJarStep\":
+                  {
+                    \"Args\": [\"--src\",\"hdfs:///user/hadoop/crawl/linkdb\",\"--dest\",\"s3://#{s3_bucket}/crawl/linkdb\",\"--srcPattern\",\".*\",\"--outputCodec\",\"snappy\"],
+                    \"Jar\": \"s3://elasticmapreduce/libs/s3distcp/role/s3distcp.jar\"
+                  }, \"Name\": \"crawlData2S3\"
+                },
+                { \"HadoopJarStep\":
+                  {
+                    \"Args\": [\"--src\",\"hdfs:///user/hadoop/crawl/mergedsegments\",\"--dest\",\"s3://#{s3_bucket}/crawl/segments\",\"--srcPattern\",\".*\",\"--outputCodec\",\"snappy\"],
+                    \"Jar\": \"s3://elasticmapreduce/libs/s3distcp/role/s3distcp.jar\"
+                  }, \"Name\": \"crawlData2S3\"
+                }
+              ]".delete(" ")
     end
   end
 
-  def run_iter
-    Rake::Task["nutch:crawl"].execute
-    Rake::Task["nutch:index"].execute
+  def get_emr_properties(cluster_nodes, master_type, slave_type)
+    return "{
+              \"InstanceCount\": #{cluster_nodes},
+              \"MasterInstanceType\": \"#{master_type}\",
+              \"HadoopVersion\": \"1.0.3\",
+              \"KeepJobFlowAliveWhenNoSteps\": false,
+              \"SlaveInstanceType\": \"#{slave_type}\",
+              \"Ec2KeyName\": \"x1\"
+            }".delete(" ")
+  end
+
+  def get_emr_bootstrap()
+    return "[
+             {
+              \"Name\": \"Adjust MR\",
+              \"ScriptBootstrapAction\": {
+                  \"Path\": \"s3://elasticmapreduce/bootstrap-actions/configure-hadoop\",
+                  \"Args\": [
+                              \"--mapred-key-value\",\"mapred.tasktracker.map.tasks.maximum=16\",
+                              \"--mapred-key-value\",\"mapred.tasktracker.reduce.tasks.maximum=8\"
+                             ]
+                  }
+              }
+            ]".delete(" ")
   end
 
 end
-
