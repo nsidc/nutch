@@ -14,7 +14,7 @@ The first issue is that recent versions of Nutch compile against a more recent H
 
 There are of course workarounds, we could manually modify the Hadoop dependencies in Nutch and compile it directly in the EMR cluster. We could also run the crawls by SSHing into the namenode and  use the new crawl script. For us this was not an optimal solution in order to automate our crawls, therefore we decided to create a branch derived from Nutch 1.6 and modify the Crawl class to make it more flexible, see [NUTCH-1821](https://issues.apache.org/jira/browse/NUTCH-1821).
 
-The modified Crawl class offers 2 important features when crawling using EMR
+The modified Crawl class offers 3 important features when crawling using EMR
 
 * **-fetchers**: Sets the number of nodes to use on each Fetch step
   This is important because on each round we can adjust the number of active nodes to match the current cluster size. Also because of the default values of mapred-site on EMR we ran into the issues described [here](http://stackoverflow.com/questions/10264183/why-does-nutch-only-run-the-fetch-step-on-one-hadoop-node-when-the-cluster-has) and this paramter will override the default 1 reducer for the generate-list step.

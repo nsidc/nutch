@@ -55,9 +55,13 @@ public class DiscardBCubeIndexingFilter implements IndexingFilter {
     // types
     List<String> xml_types = new ArrayList<String>();
     
+    xml_types.add("xml");
+    xml_types.add("json");
     xml_types.add("text/xml");
     xml_types.add("application/xml");
+    xml_types.add("application/json");    
     xml_types.add("application/opensearchdescription+xml");
+    xml_types.add("application/opensearch+xml");
     
     if (doc.getField("type") != null) {    
 	    for (Object mimeType : doc.getField("type").getValues()) {
