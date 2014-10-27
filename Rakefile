@@ -22,7 +22,7 @@ namespace :emr do
     slave_type = args[:ec2_instance]
     crawl_depth = args[:crawl_depth]
     max_pages_per_level = args[:max_pages_per_level]
-    delete_segments_after_indexing = args[:delet_segments_after_indexing]
+    delete_segments_after_indexing = args[:delete_segments_after_indexing]
     save_crawled_data_to_s3 = args[:save_data_back_to_s3]
     solr_host = args[:solr_host]
 
@@ -42,8 +42,8 @@ namespace :emr do
 
     bootstrap_actions = get_emr_bootstrap()
 
-   # puts "aws emr  run-job-flow --name BCubeCrawl --instances '#{job_properties}' --bootstrap-action '#{bootstrap_actions}' --steps '#{hadoop_steps}' --log-uri \"s3://#{s3_bucket}/logs\""
-   # --bootstrap-action '#{bootstrap_actions}'
+    puts "Running: aws emr  run-job-flow --name BCubeCrawl --instances '#{job_properties}' --steps '#{hadoop_steps}' --log-uri \"s3://#{s3_bucket}/logs\""
+
     run ("aws emr  run-job-flow --name BCubeCrawl --instances '#{job_properties}' --steps '#{hadoop_steps}' --log-uri \"s3://#{s3_bucket}/logs\"")
 
   end
