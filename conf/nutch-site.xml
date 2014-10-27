@@ -122,7 +122,7 @@
 	  per IP in the new version of the Generator.
 	  </description>
 	</property>
-	
+
 	<property>
 	  <name>generate.max.count</name>
 	  <value>-1</value>
@@ -168,7 +168,7 @@
 
   <property>
    <name>fetcher.max.crawl.delay</name>
-   <value>5</value>
+   <value>11</value>
    <description>
    If the Crawl-Delay in robots.txt is set to greater than this value (in
    seconds) then the fetcher will skip this page, generating an error report.
@@ -210,7 +210,7 @@
 
   <property>
     <name>fetcher.verbose</name>
-    <value>true</value>
+    <value>false</value>
     <description>If true, fetcher will log more verbosely.</description>
   </property>
 
@@ -277,10 +277,10 @@
     in the output but not follow them. If db.ignore.external.links is true this directive is ignored.
     </description>
   </property>
-  
-  
+
+
   <!-- Solr properties -->
-  
+
   <property>
   <name>solr.commit.size</name>
   <value>250</value>
@@ -308,7 +308,7 @@
   your credentials.
   </description>
 </property>
-  
+
 <property>
   <name>solr.auth.username</name>
   <value>bcube</value>

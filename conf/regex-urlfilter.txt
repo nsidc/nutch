@@ -38,4 +38,11 @@
 # accept gov, org and edu domains
 +^(http|https)://.*.gov/
 +^(http|https)://.*.org/
++^(http|https)://.*.no/
++^(http|https)://.*.ac.uk/
++^(http|https)://.*.eu/
++^(http|https)://.*.int/
 +^(http|https)://.*.edu/
+-^(http|https)://.*Titles*
+-^(http|https)://.*journal*
+-^(http|https)://.*sympos*

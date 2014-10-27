@@ -39,8 +39,8 @@
 		<field dest="digest" source="digest"/>
 		<field dest="tstamp" source="tstamp"/>
 		<field dest="id" source="url"/>
-                <field dest="raw_content" source="raw_content"/>
-                <field dest="xml_namespaces" source="xml_namespaces"/>
+    <field dest="raw_content" source="raw_content"/>
+    <field dest="xml_namespaces" source="xml_namespaces"/>
 		<copyField source="url" dest="url"/>
 	</fields>
 	<uniqueKey>id</uniqueKey>
