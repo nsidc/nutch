@@ -96,8 +96,10 @@ public class NamespaceIndexingFilterTest {
 		assertNull(returnedDoc.getField("xml_namespaces"));
 	}
 	
+	
+
 	@Test
-	public void filter_works_with_xml_documents() throws IndexingException {
+	public void filter_does_not_index_duplicated_namespaces() throws IndexingException {
 
 		Configuration conf = NutchConfiguration.create();
 		NutchDocument doc = new NutchDocument();
@@ -105,9 +107,9 @@ public class NamespaceIndexingFilterTest {
 		namespaceFilter.setConf(conf);
 		
 		ArrayList<String> namespaces = new ArrayList<String>();
-		namespaces.add("xmlns:oai-identifier=\"http://www.openarchives.org/OAI/2.0/oai-identifier\"");
-		namespaces.add("xmlns:some-identifier=\"http://www.google.com\"");
-		namespaces.add("xmlns:a-identifier=\"http://www.someurl.com\"");
+		namespaces.add("xmlns:duplicated=\"http://dummy.org\"");
+		namespaces.add("xmlns:duplicated=\"http://dummy.org\"");
+		namespaces.add("xmlns:random=\"http://www.someurl.com\"");
 		//we have a doc with xml content that we would actually if we ran a filter	
 		String raw_xml = buildXMLString(namespaces);		
 		
@@ -118,11 +120,10 @@ public class NamespaceIndexingFilterTest {
 		
 		assertNotNull(returnedDoc);
 		List<Object> parsed_namespaces = returnedDoc.getField("xml_namespaces").getValues();
-		assertTrue(parsed_namespaces.size() == 3);
+		assertTrue(parsed_namespaces.size() == 2);
 		
-		assertEquals ("Not equals", "xmlns:oai-identifier=\"http://www.openarchives.org/OAI/2.0/oai-identifier\"", parsed_namespaces.get(0).toString());
-		assertEquals ("Not equals", "xmlns:some-identifier=\"http://www.google.com\"", parsed_namespaces.get(1).toString());
-		assertEquals ("Not equals", "xmlns:a-identifier=\"http://www.someurl.com\"", parsed_namespaces.get(2).toString());
+		assertEquals ("xmlns:duplicated=\"http://dummy.org\"", parsed_namespaces.get(0).toString());
+		assertEquals ("xmlns:random=\"http://www.someurl.com\"", parsed_namespaces.get(1).toString());
 	}
 }
 

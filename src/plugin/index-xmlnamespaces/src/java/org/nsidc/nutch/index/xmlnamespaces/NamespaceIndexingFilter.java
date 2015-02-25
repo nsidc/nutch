@@ -38,7 +38,11 @@ public class NamespaceIndexingFilter implements IndexingFilter {
 		List<String> matches = new ArrayList<String>();
 		ArrayList<String> namespaces = new ArrayList<String>();		
 		matches = getAllMatches(xml, "xmlns(.*?)=(\".*?\")");		
-		namespaces.addAll(matches);
+		for (String ns : matches){ // easier than using sets in Java
+			if (!namespaces.contains(ns)) {
+				namespaces.add(ns);
+			}
+		}
 	
 		return namespaces;
 	}
